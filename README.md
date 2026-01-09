@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pokemon Tinder
 
-## Getting Started
+A small web app that shows Pokémon in a Tinder-style flow and attaches a Chuck Norris joke.
 
-First, run the development server:
+Users choose a Pokémon **region** and **types**, then swipe **Like / Dislike**. Liked Pokémon are saved to a list, and disliked Pokémon never appear again.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technologies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Frontend
+- Next.js (App Router) + React + TypeScript
+- Tailwind CSS (light/dark support)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Backend
+- Next.js Route Handlers (`src/app/api/**`)
+- JWT auth using `jsonwebtoken` (HttpOnly cookie session)
+- Password hashing using `bcryptjs`
+- Validation using `zod`
 
-## Learn More
+### Database
+- PostgreSQL (Docker)
+- Prisma ORM (schema + migrations)
 
-To learn more about Next.js, take a look at the following resources:
+### External APIs
+- PokeAPI (`https://pokeapi.co`)
+- Chuck Norris Jokes API (`https://api.chucknorris.io`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Requirements
+- Node.js 20+
+- Docker
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Setup
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 1) Create `.env`
+Copy the example env file:
+
+- Windows (CMD):
+  - `copy .env.example .env`
+- PowerShell:
+  - `Copy-Item .env.example .env`
+- macOS/Linux:
+  - `cp .env.example .env`
+
+Ensure `.env` contains:
+- `DATABASE_URL="postgresql://app:app@localhost:5432/app?schema=public"`
+- `JWT_SECRET="your-long-random-secret"`
+
+### 2) Start Postgres
+`docker compose up -d`
+
+### 3) Install dependencies
+`npm i`
+
+### 4) Generate Prisma client + run migrations
+`npx prisma generate`  
+`npx prisma migrate dev`
+
+### 5) Run the app
+`npm run dev`  
+Open `http://localhost:3000`
+
+---
+
+## First-time user behavior
+
+1. Opening `/` checks `/api/me`.
+2. If not logged in, the app redirects to `/login`.
+3. A new user registers at `/register` (session cookie is set automatically).
+4. The user visits `/setup` to choose region and types (saved to DB).
+5. The main screen `/` loads Pokémon from `/api/pokemon/next`.
+6. Swipes are stored in DB; swiped Pokémon won’t appear again.
+7. Liked Pokémon are visible on `/liked`.
+
+---
